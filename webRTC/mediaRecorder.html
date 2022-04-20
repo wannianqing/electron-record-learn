@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <p>MediaDevices</p>
+  <button class="btn">开始录制</button>
+  <button class="stop">停止录制</button>
+  <button class="play">播放</button>
+  <video src="" class="video"></video>
+  <video src="" class="playVideo"></video>
+  <script>
+    const oVideo = document.querySelector('.video')
+    const oPlayVideo = document.querySelector('.playVideo')
+    const oBtn = document.querySelector('.btn')
+    const oStop = document.querySelector('.stop')
+    const oPlay = document.querySelector('.play')
+
+    let stream;
+    let recordInstance = null
+    let blobSlice = []
+    const init = async () => {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video:{
+          width:600,
+          height:500
+        }
+      })
+      oVideo.srcObject = stream
+      oVideo.play()
+    }
+    init()
+
+    const startRecord = () => {
+      console.log(stream)
+      recordInstance = new MediaRecorder(stream,{
+        mimeType:'video/webm'
+      })
+
+      if(recordInstance){
+        recordInstance.start()
+
+        recordInstance.ondataavailable = function(e){
+          blobSlice.push(e.data)
+        }
+
+        recordInstance.onstop = function(){
+          console.log(blobSlice)
+        }
+      }
+    }
+
+    oBtn.addEventListener('click',function(){
+      startRecord()
+    })
+
+    oStop.addEventListener('click',function(){
+      recordInstance&&recordInstance.stop()
+    })
+
+    oPlay.addEventListener('click',function(){
+      // console.log(blobSlice)
+      const blob = new Blob(blobSlice,{type:'video/mp4'})
+      const videoUrl = URL.createObjectURL(blob)
+      console.log(videoUrl)
+
+      oPlayVideo.src = videoUrl
+      oPlayVideo.play()
+    })
+
+    // MediaRecorder
+  </script>
+</body>
+</html>
