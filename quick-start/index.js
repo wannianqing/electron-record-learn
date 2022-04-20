@@ -1,16 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
-
-const path = require('path')
-const fs = require('fs')
-
-const url = path.resolve('root','resource')
-
-console.log(fs.existsSync(url))
-
-ipcMain.on('renderer-send',(event,data) => {
-  console.log(data)
-  event.reply('main-send','我接受到了，现在给你')
-})
+const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron')
 let mainWin;
 app.on('ready',function(){
   mainWin = new BrowserWindow({
@@ -24,27 +12,28 @@ app.on('ready',function(){
     }
   })
 
+  const tray = new Tray('icon-desk.png')
+  tray.setToolTip('老万录屏')
+
+  const menu = Menu.buildFromTemplate([
+    {
+      label:'设置',
+      click:() => {
+        console.log('我点击设置')
+      }
+    },
+    {
+      label:'退出',
+      click:() => {
+        app.quit()
+      }
+    }
+  ])
+
+  tray.setContextMenu(menu)
+
   mainWin.loadFile('./index.html')
   mainWin.once('ready-to-show',function(){
     mainWin.show()
   })
 })
-
-ipcMain.on('move-application',(event,pos) => {
-  console.log(pos)
-
-  mainWin && mainWin.setPosition(pos.posX,pos.posY)
-})
-
-
-/**
- * 主进程和渲染进程
- * 
- * 主进程中可以使用nodejs的所有API
- * 
- * ipc通信，  ipcMain  ipcRenderer
- * 
- * ipcMain 主进程中的模块
- * 
- * ipcRenderer 渲染进程中的模块
- */
