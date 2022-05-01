@@ -1,10 +1,12 @@
 <template>
-  <div>
-    dashboard
-  </div>
+  <Layer>
+    <p>dashboard</p>
+  </Layer>
 </template>
 <script>
-  export default {
-    name:'Dashboard'
-  }
+import Layer from '@/components/Layer.vue'
+export default {
+  name:'Dashboard',
+  components:{ Layer }
+}
 </script>
