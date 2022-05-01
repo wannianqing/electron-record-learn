@@ -5,7 +5,6 @@ export default {
   name:'Layer',
   setup(){
     const handleDrag = (pos) => {
-      console.log(pos)
       ipcRenderer.send('move-main',{
         x: pos.x,
         y: pos.y

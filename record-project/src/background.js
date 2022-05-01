@@ -1,5 +1,5 @@
 'use strict'
-import { app, screen } from 'electron'
+import { app, screen, desktopCapturer, ipcMain } from 'electron'
 import Launch from './wins/launch'
 import Dashboard from './wins/dashboard'
 
@@ -12,6 +12,14 @@ import {
   DESIGNE_DASHBOARD_HEIGHT
 } from './utils/constant'
 // import Main from 'electron/main'
+
+const getSize = () => {
+  const {size,scaleFactor} = screen.getPrimaryDisplay()
+  return {
+    width:size.width * scaleFactor,
+    height:size.height * scaleFactor
+  }
+}
 
 app.on('ready', async () => {
   const rect = screen.getPrimaryDisplay().bounds
@@ -43,5 +51,15 @@ app.on('ready', async () => {
     //   LaunchPage.close()
     // })
   })
+})
+
+ipcMain.on('recive-desktop',async (event) => {
+  const sizeInfo = getSize()
+  const source = await desktopCapturer.getSources({
+    types: ['window', 'screen'],
+    thumbnailSize:sizeInfo
+  })
+
+  event.reply('reply-source',source[0])
 })
 
