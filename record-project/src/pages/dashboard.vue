@@ -8,22 +8,23 @@
               <p class="start">{{isRecord ? '结束' : '录屏'}}</p>
             </div>
             <div class="time-box">
-              <p class="time">00:00:00</p>
+              <p class="time">{{transTime(timestamp)}}</p>
             </div>
           </div>
           <div class="list-box">
             <div class="video-list">
               <div class="video-item" v-for="item in files" :key="item">
                 <p class="item-opt name">{{item}}</p>
-                <p class="item-opt play">播放</p>
-                <p class="item-opt play">打开文件目录</p>
+                <p class="item-opt play" @click="handlePlay(item)">播放</p>
+                <p class="item-opt play" @click="openDir(item)">打开文件目录</p>
               </div>
             </div>
           </div>
         </div>
         <div class="screen-preview">
           <div class="img">
-            <img :src="previewImg">
+            <img :src="previewImg" v-if="videoUrl === ''">
+            <video :src="`http://localhost:9000/${videoUrl}`" controls v-else></video>
           </div>
         </div>
       </div>
@@ -57,11 +58,30 @@ export default {
     }
     getPreview()
 
+    const timer = ref(null)
+    const timestamp = ref(0)
+
+    const countDown = () => {
+      timestamp.value++ 
+      timer.value = setTimeout(() => {
+        countDown()
+      },1000)
+    }
+
+    const transTime = (time) => {
+      const h = Math.floor(time/3600) < 10 ? '0'+Math.floor(time/3600) : Math.floor(time/3600)
+      const m = Math.floor((time / 60) % 60) < 10 ? '0'+Math.floor((time / 60) % 60) : Math.floor((time / 60) % 60)
+      const s = Math.floor(time % 60) < 10 ? '0'+Math.floor(time % 60) : Math.floor(time % 60)
+
+      return `${h}:${m}:${s}`
+    }
+
     const recorder = ref(null)
     const isRecord = ref(false)
     const files = ref([])
     files.value = directoryFiles()
     const recordStart = (stream) => {
+      countDown()
       isRecord.value = true
       let blobSlice = []
       recorder.value = new MediaRecorder(stream,{
@@ -92,6 +112,8 @@ export default {
 
     const sourceStart = async () => {
       if(isRecord.value){
+        timer.value&&clearTimeout(timer.value)
+        timestamp.value = 0
         recorder.value&&recorder.value.stop()
         return
       }
@@ -112,11 +134,23 @@ export default {
       recordStart(stream)
     }
 
+    const videoUrl = ref('')
+    const handlePlay = (item) => {
+      videoUrl.value = item
+    }
+    const openDir =(item) => {
+      ipcRenderer.send('directory-open',item)
+    }
     return {
       previewImg,
       sourceStart,
       isRecord,
-      files
+      files,
+      timestamp,
+      transTime,
+      handlePlay,
+      videoUrl,
+      openDir
     }
   }
 }

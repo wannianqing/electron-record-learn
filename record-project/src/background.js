@@ -1,5 +1,5 @@
 'use strict'
-import { app, screen, desktopCapturer, ipcMain } from 'electron'
+import { app, screen, desktopCapturer, ipcMain, shell } from 'electron'
 import Launch from './wins/launch'
 import Dashboard from './wins/dashboard'
 
@@ -9,8 +9,13 @@ import {
   DESIGNE_LAUNCH_WIDTH,
   DESIGNE_LAUNCH_HEIGHT,
   DESIGNE_DASHBOARD_WIDTH,
-  DESIGNE_DASHBOARD_HEIGHT
+  DESIGNE_DASHBOARD_HEIGHT,
+  VIDEO_PATH
 } from './utils/constant'
+
+import { httpServer } from '@/utils/server'
+
+const path = require('path')
 // import Main from 'electron/main'
 
 const getSize = () => {
@@ -36,6 +41,8 @@ app.on('ready', async () => {
   LaunchPage.on('show',function(){
     console.log('启动页启动了')
 
+    httpServer()
+
     setTimeout(() => {
       const DashboardPage = new Dashboard({
         width:dashW,
@@ -51,6 +58,11 @@ app.on('ready', async () => {
     //   LaunchPage.close()
     // })
   })
+})
+
+ipcMain.on('directory-open',(event,data) => {
+  const file = path.join(VIDEO_PATH,data)
+  shell.showItemInFolder(file)
 })
 
 ipcMain.on('recive-desktop',async (event) => {
