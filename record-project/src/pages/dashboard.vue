@@ -111,14 +111,20 @@ export default {
     }
 
     const sourceStart = async () => {
-      if(isRecord.value){
-        timer.value&&clearTimeout(timer.value)
-        timestamp.value = 0
-        recorder.value&&recorder.value.stop()
+      if(!isRecord.value){
+        ipcRenderer.send('startRecord')
         return
       }
+      ipcRenderer.send('stopRecord')
+    }
+    ipcRenderer.on('record-stop',() => {
+      timer.value&&clearTimeout(timer.value)
+      timestamp.value = 0
+      recorder.value&&recorder.value.stop()
+    })
+    ipcRenderer.on('record-start',async () => {
+      console.log('我接受到没')
       const source = await getSource()
-
       const stream = await navigator.mediaDevices.getUserMedia({
         video:{
           mandatory:{
@@ -132,7 +138,7 @@ export default {
         }
       })
       recordStart(stream)
-    }
+    })
 
     const videoUrl = ref('')
     const handlePlay = (item) => {

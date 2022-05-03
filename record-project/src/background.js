@@ -2,6 +2,7 @@
 import { app, screen, desktopCapturer, ipcMain, shell } from 'electron'
 import Launch from './wins/launch'
 import Dashboard from './wins/dashboard'
+import SuspendBall from './wins/ball'
 
 import {
   BASE_WIN_WIDTH,
@@ -10,6 +11,7 @@ import {
   DESIGNE_LAUNCH_HEIGHT,
   DESIGNE_DASHBOARD_WIDTH,
   DESIGNE_DASHBOARD_HEIGHT,
+  DESIGNE_BALL_ARC,
   VIDEO_PATH
 } from './utils/constant'
 
@@ -25,7 +27,7 @@ const getSize = () => {
     height:size.height * scaleFactor
   }
 }
-
+let DashboardPage,Ball
 app.on('ready', async () => {
   const rect = screen.getPrimaryDisplay().bounds
   const launcW = (rect.width / BASE_WIN_WIDTH) * DESIGNE_LAUNCH_WIDTH
@@ -33,6 +35,8 @@ app.on('ready', async () => {
 
   const dashW = (rect.width / BASE_WIN_WIDTH) * DESIGNE_DASHBOARD_WIDTH
   const dashH = (rect.height / BASE_WIN_HEIGHT) * DESIGNE_DASHBOARD_HEIGHT
+
+  const ballArc = (rect.height / BASE_WIN_HEIGHT) * DESIGNE_BALL_ARC
   const LaunchPage = new Launch({
     width:launcW,
     height:launcH
@@ -40,11 +44,15 @@ app.on('ready', async () => {
 
   LaunchPage.on('show',function(){
     console.log('启动页启动了')
-
     httpServer()
 
+    Ball = new SuspendBall({
+      width:ballArc,
+      height:ballArc
+    })
+
     setTimeout(() => {
-      const DashboardPage = new Dashboard({
+      DashboardPage = new Dashboard({
         width:dashW,
         height:dashH
       })
@@ -58,6 +66,17 @@ app.on('ready', async () => {
     //   LaunchPage.close()
     // })
   })
+})
+
+ipcMain.on('startRecord',()=>{
+  console.log('接收到没')
+  DashboardPage.getWebcontents().send('record-start')
+  Ball.getWebcontents().send('record-start')
+})
+
+ipcMain.on('stopRecord',() => {
+  DashboardPage.getWebcontents().send('record-stop')
+  Ball.getWebcontents().send('record-stop')
 })
 
 ipcMain.on('directory-open',(event,data) => {

@@ -66,6 +66,9 @@ class Dashboard extends events {
       app.quit()
     })
   }
+  getWebcontents(){
+    return this.windowInstance.webContents
+  }
 }
 
 export default Dashboard
