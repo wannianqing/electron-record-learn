@@ -1,57 +1,67 @@
 <template>
   <div class="suspend-page" v-mouse-drag="handleDrag">
-    <div class="ball" ref="ballRef">{{transTime(timestamp)}}</div>
+    <div class="ball" ref="ballRef">{{timeFormat(timestamp)}}</div>
   </div>
 </template>
 <script>
-import { ref } from 'vue'
-import { timeFormat } from '@/utils/helper'
+import { defineComponent, ref, onMounted } from 'vue'
+import { timestampToTime } from '@/utils/utils'
 const { ipcRenderer } = window.require('electron')
-export default {
+export default defineComponent({
   name:'Suspend',
   setup(){
-    const timer = ref(null)
     const timestamp = ref(0)
+    const timer = ref(null)
     const isRecord = ref(false)
-
     const countDown = () => {
-      timestamp.value++ 
+      timestamp.value++
       timer.value = setTimeout(() => {
         countDown()
       },1000)
     }
-
-    const transTime = (time) => {
-      return timeFormat(time)
-    }
-
     const startCount = () => {
       if(!isRecord.value){
         isRecord.value = true
         countDown()
       }
     }
+    const timeFormat = (timestamp) => {
+      return timestampToTime(timestamp)
+    }
 
-    ipcRenderer.on('record-start',() => {
+    ipcRenderer.on('record-start',()=>{
       startCount()
     })
+
     ipcRenderer.on('record-stop',() => {
-      timer.value&&clearTimeout(timer.value)
+      clearTimeout(timer.value)
       timestamp.value = 0
       isRecord.value = false
     })
 
-
     const handleDrag = (pos) => {
-      ipcRenderer.send('ball-move',pos)
+      ipcRenderer.send('move-suspend', {
+        baseX: pos.x,
+        baseY: pos.y
+      })
     }
+    const ballRef = ref()
+    onMounted(() => {
+      ballRef.value.addEventListener('dblclick',function(e){
+        console.log('双击')
+        e.preventDefault()
+        ipcRenderer.send('main-show')
+      })
+    })
+
     return {
+      ballRef,
       handleDrag,
-      timestamp,
-      transTime
+      timeFormat,
+      timestamp
     }
   }
-}
+})
 </script>
 <style lang="scss" scoped>
 html,body{

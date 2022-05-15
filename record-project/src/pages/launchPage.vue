@@ -1,13 +1,13 @@
-<template>
-  <div class="page-wrapper launch-page">
-    <p>启动页</p>
-  </div>
-</template>
 <script>
-  export default {
-    name:'LaunchPage'
-  }
+export default {
+  name:'LaunchPage'
+}
 </script>
+<template>
+<div class="page-wrapper launch-page">
+  <p>启动页</p>
+</div>
+</template>
 <style lang="scss" scoped>
 .launch-page{
   background:$color-bg-theme;

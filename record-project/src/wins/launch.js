@@ -1,28 +1,30 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, WebContents, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const events = require('events')
 
 const winConfig = {
-  show:false,
-  frame:false,
-  focusable:true,
-  resizable:false,
-  webPreferences:{
-    nodeIntergration:true,
-    contextIsolation:false
+  show: false,
+  frame: false,
+  focusable: true,
+  alwaysOnTop: false,
+  resizable: false,
+  webPreferences: {
+    nodeIntegration: true,
+    contextIsolation: false
   }
 }
-
 class Launch extends events {
-  constructor(confInfo){
+  constructor (confInfo) {
     super()
     this.confInfo = confInfo
-    this.conf = Object.assign({},winConfig,confInfo)
-    this.windowInstance = new BrowserWindow(this.conf)
+    this.state = Object.assign({}, winConfig, confInfo)
+    this.windowInstance = new BrowserWindow(this.state)
 
-    if(process.env.WEBPACK_DEV_SERVER_URL){
+    if (process.env.WEBPACK_DEV_SERVER_URL) {
       this.windowInstance.loadURL(`${process.env.WEBPACK_DEV_SERVER_URL}/#/launchPage`)
-    }else{
+      // this.windowInstance.webContents.openDevTools()
+    } else {
       createProtocol('app')
       this.windowInstance.loadURL('app://./index.html/#/launchPage')
     }
@@ -30,18 +32,40 @@ class Launch extends events {
     this.init()
   }
 
-  init(){
-    this.windowInstance.once('ready-to-show',() => {
+  init () {
+    this.windowInstance.once('ready-to-show', () => {
       this.windowInstance.show()
     })
 
-    this.windowInstance.on('show',() => {
+    this.windowInstance.on('show', () => {
       this.emit('show')
+    })
+
+    this.listenIpc()
+  }
+
+  listenIpc () {
+    const { width, height } = this.confInfo
+    ipcMain.on('move-launch', (event, pos) => {
+      this.windowInstance && this.windowInstance.setBounds({ width, height })
+      this.windowInstance && this.windowInstance.setPosition(pos.baseX, pos.baseY)
     })
   }
 
-  close(){
-    if(this.windowInstance && this.windowInstance.isVisible){
+  getWebContents () {
+    return this.windowInstance.webContents
+  }
+
+  getWindowInstance () {
+    return this.windowInstance
+  }
+
+  hide () {
+    this.windowInstance && this.windowInstance.hide()
+  }
+
+  close () {
+    if (this.windowInstance && this.windowInstance.isVisible()) {
       this.windowInstance.close()
       this.windowInstance = null
     }

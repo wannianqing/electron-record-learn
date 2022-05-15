@@ -1,12 +1,13 @@
-export const DESIGNE_LAUNCH_WIDTH = 500
-export const DESIGNE_LAUNCH_HEIGHT = 300
+export const REM_UNIT = 120
+export const DESIGN_WIDTH = 1200 // 设计稿的宽
+export const DESIGN_HEIGHT = 800 // 设计稿的高
 
-export const DESIGNE_DASHBOARD_WIDTH = 1200
-export const DESIGNE_DASHBOARD_HEIGHT = 800
+export const DESIGN_WIDTH_SMALL = 500
+export const DESIGN_HEIGHT_SMALL = 300
 
-export const DESIGNE_BALL_ARC = 80
+export const DESIGN_ARC_BALL = 80
 
-export const BASE_WIN_WIDTH = 1920
-export const BASE_WIN_HEIGHT = 1080
+export const BASE_WIN_WIDTH = 1920 // 标准分辨率宽
+export const BASE_WIN_HEIGHT = 1200 // 标准分辨率高
 
-export const VIDEO_PATH = 'd:/videos'
+export const VIDEO_PATH = 'd:/laowan'

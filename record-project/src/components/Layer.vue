@@ -3,37 +3,44 @@ import { ref } from 'vue'
 const { ipcRenderer } = window.require('electron')
 export default {
   name:'Layer',
+  props:{
+    pageTitle:{
+      type:String,
+      default:'老万录屏'
+    }
+  },
   setup(){
     const handleDrag = (pos) => {
-      ipcRenderer.send('move-main',{
-        x: pos.x,
-        y: pos.y
+      ipcRenderer.send('move-main', {
+        baseX: pos.x,
+        baseY: pos.y
       })
     }
-
-    const handleMinimize = () => {
-      ipcRenderer.send('mainwin-minimize')
+    // 最小化
+    const minWin = function () {
+      ipcRenderer.send('mainWin:minimize')
     }
+    // 最大化
     const isMax = ref(false)
-    const handleMaximize = () => {
-      if(isMax.value){
-        ipcRenderer.send('mainwin-restore')
-      }else{
-        ipcRenderer.send('mainwin-maximize')
+    const maxWin = function () {
+      if (isMax.value) {
+        ipcRenderer.send('mainWin:restore')
+      } else {
+        ipcRenderer.send('mainWin:maximize')
       }
       isMax.value = !isMax.value
     }
-
-    const handleClose = () => {
-      ipcRenderer.send('mainwin-close')
+    // 关闭
+    const closeWin = function () {
+      ipcRenderer.send('mainWin:close')
     }
 
     return {
-      handleDrag,
-      handleMinimize,
-      handleMaximize,
       isMax,
-      handleClose
+      handleDrag,
+      minWin,
+      maxWin,
+      closeWin
     }
   }
 }
@@ -44,16 +51,16 @@ export default {
     <div class="header-content">
       <div class="header-logo">
         <i class="icon"></i>
-        <p class="title">录屏客户端</p>
+        <p class="title">{{pageTitle}}</p>
       </div>
       <div class="header-operate">
-          <div class="btn-box" @click="handleMinimize">
+          <div class="btn-box" @click="minWin">
             <i class="icon min"></i>
           </div>
-          <div class="btn-box" @click="handleMaximize">
+          <div class="btn-box" @click="maxWin">
             <i :class="['icon',isMax ? 'reset' : 'max']"></i>
           </div>
-          <div class="btn-box" @click="handleClose">
+          <div class="btn-box" @click="closeWin">
             <i class="icon close"></i>
           </div>
         </div>
